@@ -30,15 +30,15 @@ doppler run --project hq-govt-leads-hq --config dev -- bun run dev
 
 ## Env vars
 
-Injected by Doppler at runtime. All `RSH_*` keys live in the `hq-govt-leads-hq` Doppler project.
+Injected by Doppler at runtime. All `GL_*` keys live in the `hq-govt-leads-hq` Doppler project.
 
 | Key | Description |
 |-----|-------------|
-| `RSH_SUPABASE_URL` | Supabase project URL |
-| `RSH_SUPABASE_JWKS_URL` | JWKS endpoint for JWT verification |
-| `RSH_SUPABASE_ISSUER` | Expected JWT issuer |
-| `RSH_SUPABASE_ANON_KEY` | Supabase anon key |
-| `RSH_SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
+| `GL_SUPABASE_URL` | Supabase project URL |
+| `GL_SUPABASE_JWKS_URL` | JWKS endpoint for JWT verification |
+| `GL_SUPABASE_ISSUER` | Expected JWT issuer |
+| `GL_SUPABASE_ANON_KEY` | Supabase anon key |
+| `GL_SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
 | `DEX_BASE_URL` | data-engine-x API base URL |
 | `DEX_SERVICE_TOKEN` | data-engine-x service token |
 | `ALLOWED_ORIGINS` | Comma-separated CORS origins |
