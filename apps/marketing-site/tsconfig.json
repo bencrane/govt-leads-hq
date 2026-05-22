@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "types": ["vite/client", "node"],
+    "baseUrl": ".",
+    "paths": {
+      "@govt-leads-hq/shared": ["../../packages/shared/src/index.ts"],
+      "@govt-leads-hq/shared/*": ["../../packages/shared/src/*"],
+      "@govt-leads-hq/ui": ["../../packages/ui/src/index.ts"],
+      "@govt-leads-hq/tokens": ["../../packages/tokens/src/index.ts"],
+      "@/*": ["src/*"]
+    },
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*",
+    "vite.config.ts",
+    "../../packages/shared/src/**/*",
+    "../../packages/ui/src/**/*",
+    "../../packages/tokens/src/**/*"
+  ]
+}
