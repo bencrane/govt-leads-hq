@@ -2,24 +2,22 @@
  * App — the platform-app router shell.
  *
  * Routes:
- *   `/`                          → unauthenticated catalyst map demo (untouched).
+ *   `/`                          → redirect to /winners.
+ *   `/winners`                   → 30-day federal contract winners browser.
  *   `/opportunities`             → SAM.gov active opportunities list (auth).
  *   `/opportunities/:notice_id`  → single opportunity detail (auth).
  *
- * The /opportunities surface is gated by <RequireAuth>; the map route
- * remains anonymous so the demo link still works. Both branches live
- * under one <AuthProvider> at the App root so that signing in on the
- * /opportunities page also reflects on any other future authenticated
- * surface without a remount.
+ * The /opportunities surface is gated by <RequireAuth>. /winners is public.
+ * Both branches live under one <AuthProvider> at the App root.
  */
 
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 
-import MapDemo from "./routes/MapDemo";
 import { AuthProvider, useAuth } from "./lib/auth";
 import { SignIn } from "./opportunities/SignIn";
 import OppsList from "./opportunities/OppsList";
 import OppDetail from "./opportunities/OppDetail";
+import { Winners } from "./winners/Winners";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
@@ -32,7 +30,8 @@ export function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/" element={<MapDemo />} />
+        <Route path="/" element={<Navigate to="/winners" replace />} />
+        <Route path="/winners" element={<Winners />} />
         <Route
           path="/opportunities"
           element={
