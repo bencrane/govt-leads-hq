@@ -16,6 +16,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import type { EmployeeBand, FundingStatus, RevenueBand, Winner } from "../data/winners-fixture";
+import { getPeopleByUei } from "../data/people-fixture";
 import {
   CSV_HEADER,
   type SortDir,
@@ -23,6 +24,7 @@ import {
   fetchWinners30d,
   winnersToCSV,
 } from "../lib/winners-api";
+import { PeopleSection } from "./PeopleSection";
 
 // ── Utility ──────────────────────────────────────────────────────────────────
 
@@ -225,6 +227,11 @@ export function Winners() {
     fontFamily: "var(--font-sans, 'Inter', system-ui, sans-serif)",
     display: "flex",
     flexDirection: "column",
+    maxWidth: "1440px",
+    margin: "0 auto",
+    paddingLeft: "64px",
+    paddingRight: "64px",
+    boxSizing: "border-box",
   };
 
   const headerStyle: React.CSSProperties = {
@@ -321,7 +328,7 @@ export function Winners() {
     top: 0,
     right: 0,
     bottom: 0,
-    width: "min(480px, 90vw)",
+    width: "min(520px, 90vw)",
     background: "var(--color-surface-raised, #0a0e1a)",
     borderLeft: "1px solid var(--color-border-subtle, #1f2937)",
     zIndex: 101,
@@ -438,7 +445,7 @@ export function Winners() {
       {/* Body */}
       <div style={bodyStyle}>
         {/* Filter sidebar */}
-        <aside style={sidebarStyle}>
+        <aside data-testid="winners-filters-sidebar" style={sidebarStyle}>
           <div style={{ fontFamily: "monospace", fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--color-text-muted, #6b7280)", paddingBottom: "8px", borderBottom: "1px solid var(--color-border-subtle, #1f2937)" }}>
             Filters
           </div>
@@ -788,6 +795,9 @@ export function Winners() {
                 </span>
               </div>
             </div>
+
+            {/* People section */}
+            <PeopleSection people={getPeopleByUei(selectedWinner.recipient_uei)} />
           </>
         )}
       </aside>
