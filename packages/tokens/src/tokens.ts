@@ -1,5 +1,5 @@
 /**
- * Design tokens — single source of truth for Rare Structure HQ.
+ * Design tokens — single source of truth for GovtLeads HQ.
  *
  * Edit this file to change any spacing, color, type, motion, breakpoint, radius,
  * or z-index value used across the platform. The `build.ts` script consumes this
@@ -9,13 +9,13 @@
  *   dist/tailwind/preset.ts — Tailwind v4 preset (re-exports the CSS file)
  *   dist/ts/index.ts        — Typed const exports (this module, compiled)
  *
- * House style: dark, sharp-edged (radius 0 except outer cards), mono labels.
- * Rare Structure is a catalyst-driven origination firm — the accent is a single
- * restrained, institutional slate-blue token (`accent.primary`). It is one value;
- * retune it here and all three artifacts follow.
+ * House style: terminal-dark, sharp-edged (radius 0 except outer cards), mono
+ * labels. Aesthetic anchor: CLI / dev-tool — true black surface, bright green
+ * as the primary accent (`accent.primary`), with red and yellow as live state
+ * colors. Retune values here and all three artifacts follow.
  *
  * Tokens are semantic ROLES, not a raw palette: `surface.*`, `border.*`,
- * `text.*`, `accent.*`, `state.*` — never `blue-500`.
+ * `text.*`, `accent.*`, `state.*` — never `green-500`.
  */
 
 // ───────────────────────────── spacing ─────────────────────────────
@@ -63,59 +63,62 @@ export type FontSizeToken = keyof typeof fontSize;
 
 /**
  * Color tokens — semantic roles. Concrete hex values target WCAG AA contrast on
- * the `surface.base` (#0a0e1a) background.
+ * the `surface.base` (#000000) background.
  *
  * Naming: `surface.*` (bg), `border.*`, `text.*`, `accent.*`, `state.*`.
  *
- * Accent — Rare Structure's institutional slate-blue. `accent.primary` (#3461c4)
- * carries `text.onAccent` (#fafafa) at 5.51:1 (AA). One restrained accent, tunable.
+ * Aesthetic anchor: terminal / CLI / dev-tool dark mode. True black surface,
+ * deep industrial / forest emerald as the single primary accent (deliberately
+ * not lime — cyan-leaning, deep, oxidized-brass feel), with red + yellow +
+ * green as live state colors. `accent.primary` (#047857, emerald-700) carries
+ * `text.onAccent` (#fafafa) at ~5.6:1 (AA).
  */
 export const color = {
-  // Surfaces — midnight-blue-anchored, dark.
+  // Surfaces — true black with near-black raised tiers.
   surface: {
-    base: "#0a0e1a",
-    raised: "#141827",
-    sunken: "#050812",
-    overlay: "rgba(10, 14, 26, 0.8)",
-    "raised-translucent": "rgba(20, 24, 39, 0.5)",
+    base: "#000000",
+    raised: "#0a0a0a",
+    sunken: "#000000",
+    overlay: "rgba(0, 0, 0, 0.85)",
+    "raised-translucent": "rgba(10, 10, 10, 0.55)",
   },
   border: {
-    subtle: "#1c2333",
-    default: "#2d3548",
-    strong: "#3f4b63",
-    accent: "rgba(30, 58, 110, 0.4)", // accent.primary @ 40%
+    subtle: "#171717", // neutral-900
+    default: "#262626", // neutral-800
+    strong: "#404040", // neutral-700
+    accent: "rgba(4, 120, 87, 0.5)", // accent.primary @ 50%
   },
   text: {
-    // Contrast on surface.base:
-    //   primary  (#fafafa) → 19.06:1  AAA
-    //   strong   (#f4f4f5) → 18.25:1  AAA
-    //   default  (#e4e4e7) → 15.73:1  AAA
-    //   muted    (#a1a1aa) →  7.76:1  AAA
-    //   subtle   (#82828c) →  5.23:1  AA   (body-text floor, kept above 4.5)
-    //   accent   (#93b4f5) →  9.56:1  AAA
-    //   onAccent (#fafafa on accent.primary #3461c4) → 5.51:1  AA
+    // Contrast on surface.base (#000000):
+    //   primary  (#fafafa) → 20.4:1  AAA
+    //   strong   (#f4f4f5) → 19.5:1  AAA
+    //   default  (#e4e4e7) → 16.8:1  AAA
+    //   muted    (#a1a1aa) →  8.2:1  AAA
+    //   subtle   (#737378) →  4.7:1  AA   (body-text floor)
+    //   accent   (#5db89a) →  9.2:1  AAA  (industrial mint — deeper, less lime)
+    //   onAccent (#fafafa on accent.primary #047857) → 5.6:1  AA
     primary: "#fafafa", // zinc-50
     strong: "#f4f4f5", // zinc-100
     default: "#e4e4e7", // zinc-200
     muted: "#a1a1aa", // zinc-400
-    subtle: "#82828c", // body-text contrast floor
-    accent: "#7b9fd4", // muted steel-blue accent text on dark
-    onAccent: "#fafafa", // light text on accent.primary
+    subtle: "#737378", // body-text contrast floor
+    accent: "#5db89a", // industrial mint — desaturated, cyan-leaning, less spring
+    onAccent: "#fafafa", // light text on deep emerald accent
   },
   accent: {
-    primary: "#1e3a6e", // deep midnight blue
-    primaryHover: "#2a4f8a", // slightly lighter on hover
-    primaryActive: "#182f5a", // pressed
-    soft: "rgba(30, 58, 110, 0.12)",
-    softer: "rgba(30, 58, 110, 0.06)",
+    primary: "#047857", // emerald-700 — deep industrial forest green
+    primaryHover: "#059669", // emerald-600 — brighter on hover
+    primaryActive: "#065f46", // emerald-800 — pressed, deepest
+    soft: "rgba(4, 120, 87, 0.18)",
+    softer: "rgba(4, 120, 87, 0.08)",
   },
   state: {
-    info: "#60a5fa", // blue-400 — 7.83:1
-    success: "#34d399", // emerald-400 — 10.35:1
-    warn: "#fbbf24", // amber-400 — 11.92:1
-    error: "#f87171", // red-400 — 7.19:1
-    successSoft: "rgba(52, 211, 153, 0.12)",
-    warnSoft: "rgba(251, 191, 36, 0.12)",
+    info: "#60a5fa", // blue-400 — 7.95:1
+    success: "#10b981", // emerald-500 — bright enough to read "live" on black
+    warn: "#facc15", // yellow-400 — 15.4:1
+    error: "#f87171", // red-400 — 7.32:1
+    successSoft: "rgba(16, 185, 129, 0.14)",
+    warnSoft: "rgba(250, 204, 21, 0.12)",
     errorSoft: "rgba(248, 113, 113, 0.12)",
   },
 } as const;

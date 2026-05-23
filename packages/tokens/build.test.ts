@@ -21,8 +21,8 @@ test("tokens.css contains spacing tokens", () => {
 
 test("tokens.css contains semantic color tokens", () => {
   const css = readFileSync(join(DIST, "css", "tokens.css"), "utf8");
-  expect(css).toContain("--color-surface-base: #0a0e1a");
-  expect(css).toContain("--color-accent-primary: #1e3a6e");
+  expect(css).toContain("--color-surface-base: #000000");
+  expect(css).toContain("--color-accent-primary: #047857");
 });
 
 test("tokens.css contains font-size tokens with line-height", () => {

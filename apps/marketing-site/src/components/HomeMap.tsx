@@ -1,21 +1,5 @@
 import { GEO_SCATTER_BANDS, GEO_VIEW, STATE_PATHS } from "@/data/us-geo";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useEffect, useState } from "react";
-
-const DATA_SOURCES = [
-  "USAspending · Federal Contracts",
-  "SBA 7(a) / 504 · Borrower Lending",
-  "UCC-1 Filings · Commercial Liens",
-  "SEC Form ADV · Registered Advisors",
-  "SAM.gov · Federal Contractor Registry",
-  "FMCSA · Motor Carrier Census",
-  "GLEIF · Legal Entity Identifiers",
-  "CA / FL Secretary of State · Corporate Filings",
-  "SEC EDGAR · Material Events",
-  "HMDA · Mortgage Disclosure",
-  "DOL Form 5500 · ERISA Plans",
-  "USPTO · Trademark Filings",
-] as const;
+import { motion, useReducedMotion } from "framer-motion";
 
 function Graticule() {
   const cols = 9;
@@ -50,34 +34,6 @@ function Graticule() {
     );
   }
   return <g opacity={0.3}>{lines}</g>;
-}
-
-function DataSourceCycle() {
-  const [idx, setIdx] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIdx((i) => (i + 1) % DATA_SOURCES.length);
-    }, 2800);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="h-5 overflow-hidden">
-      <AnimatePresence mode="wait">
-        <motion.span
-          key={idx}
-          className="block font-mono text-[0.625rem] uppercase tracking-[0.2em] text-[color:var(--color-text-accent)]"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.35 }}
-        >
-          {DATA_SOURCES[idx]}
-        </motion.span>
-      </AnimatePresence>
-    </div>
-  );
 }
 
 export function HomeMap() {
@@ -171,5 +127,3 @@ export function HomeMap() {
     </div>
   );
 }
-
-export { DataSourceCycle };

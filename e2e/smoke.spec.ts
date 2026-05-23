@@ -3,12 +3,7 @@
  *
  * Two surfaces:
  *
- *   1. marketing-site (5174) — the homepage.
- *      NOTE: the marketing-site heading test is currently broken pre-feature
- *      because the operator's reshape changed h1 from "GOVT LEADS" wordmark
- *      to a thesis sentence. This test is skipped until a follow-up directive
- *      rewrites it against the new copy. See directive execution log.
- *
+ *   1. marketing-site (5174) — the homepage thesis h1.
  *   2. platform-app (5173) — /winners route smoke.
  *      The rare-structure cockpit was deleted in the 30d-winners-browser
  *      feature cycle. This test now asserts the /winners route renders.
@@ -20,12 +15,13 @@ import { MARKETING_URL, PLATFORM_URL } from "./playwright.config";
 const SHOTS = "test-results";
 
 // ───────────────────────────────────────────────────────────────────
-// marketing-site — skipped pending follow-up directive.
-// Follow-up: rewrite against new h1 "Every Government Contract Creates
-// Two Things…" thesis copy after marketing-site smoke rewrite directive.
+// marketing-site — homepage thesis h1.
+// Both spans (the framer-motion crossfade pair) are always present in
+// the DOM; animation only tweens opacity, so text-content assertions
+// hold regardless of motion-reduced preference or animation phase.
 // ───────────────────────────────────────────────────────────────────
 
-test.skip("marketing-site homepage renders the wordmark with zero console errors", async ({
+test("marketing-site homepage renders the thesis h1 with zero console errors", async ({
   page,
 }) => {
   const consoleErrors: string[] = [];
@@ -38,8 +34,8 @@ test.skip("marketing-site homepage renders the wordmark with zero console errors
 
   const heading = page.locator("h1");
   await expect(heading).toBeVisible();
-  await expect(heading).toContainText("Govt", { ignoreCase: true });
-  await expect(heading).toContainText("Leads", { ignoreCase: true });
+  await expect(heading).toContainText("Every Government Contract Creates Two Things");
+  await expect(heading).toContainText("A Buyer With Money and a Deadline They Need to Hit");
 
   await page.screenshot({ path: `${SHOTS}/marketing-homepage.png`, fullPage: true });
 
