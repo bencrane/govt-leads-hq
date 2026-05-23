@@ -1,359 +1,167 @@
 /**
- * PeopleSection — drawer people list for a clicked winner.
+ * PeopleSection — drawer people list, composed on @govt-leads-hq/ui
+ * primitives. Preserves the e2e testid contract verbatim.
  *
- * Renders inside [data-testid="winners-detail-drawer"], after firmographic-block.
- * Uses inline React.CSSProperties to match Winners.tsx style convention.
- *
- * Required data-testids (per contract.md):
- *   drawer-people-section          — wrapper
- *   person-row                     — each row
- *   person-full-name               — name span
- *   person-headline                — headline span
- *   person-current-role            — current role (job_title @ company)
- *   person-location                — city, state or country fallback
- *   person-linkedin-link           — <a target="_blank" rel="noopener">
- *   person-row-expanded-detail     — expansion block (always in DOM, toggled visible)
- *   person-experiences-timeline    — timeline in expansion
- *   person-education               — education in expansion
- *   person-skills                  — skills in expansion
- *   person-certifications          — certs in expansion
+ * Structural invariant: `person-row-expanded-detail` is a DOM sibling of
+ * `person-row`, sharing one parent div — the spec walks
+ * `person-row.locator("..")` down to expanded-detail.
  */
 
 import { useState } from "react";
 import type { Person } from "../data/people-fixture";
+import { Avatar, Badge, Inline, SectionLabel, Stack, Text } from "@govt-leads-hq/ui";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+const TEXT_MUTED = "text-body-xs text-[color:var(--color-text-muted)]";
+const BREAK = "break-words";
 
-function formatCurrentRole(person: Person): string {
-  const current = person.experiences.find((e) => e.job_is_current);
-  if (!current) return "—";
-  const title = current.job_title;
-  const company = current.company_name;
-  if (title && company) return `${title} @ ${company}`;
-  if (company) return `at ${company}`;
+function formatCurrentRole(p: Person): string {
+  const cur = p.experiences.find((e) => e.job_is_current);
+  if (!cur) return "—";
+  if (cur.job_title && cur.company_name) return `${cur.job_title} @ ${cur.company_name}`;
+  if (cur.company_name) return `at ${cur.company_name}`;
   return "—";
 }
 
-function formatLocation(person: Person): string {
-  const { city, state_code, country_code } = person.location;
+function formatLocation(p: Person): string {
+  const { city, state_code, country_code } = p.location;
   if (city && state_code) return `${city}, ${state_code}`;
-  if (city) return city;
-  if (state_code) return state_code;
-  if (country_code) return country_code;
-  return "—";
+  return city || state_code || country_code || "—";
 }
 
 function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0].toUpperCase())
-    .join("");
+  return name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
-
-const sectionTitleStyle: React.CSSProperties = {
-  fontFamily: "monospace",
-  fontSize: "0.7rem",
-  textTransform: "uppercase",
-  letterSpacing: "0.12em",
-  color: "var(--color-text-muted, #6b7280)",
-  marginBottom: "10px",
-  paddingBottom: "6px",
-  borderBottom: "1px solid var(--color-border-subtle, #1f2937)",
-};
-
-const emptyStateStyle: React.CSSProperties = {
-  fontSize: "0.8125rem",
-  color: "var(--color-text-muted, #6b7280)",
-  fontFamily: "monospace",
-  padding: "10px 0",
-};
-
-const rowStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "flex-start",
-  gap: "10px",
-  padding: "10px 0",
-  borderBottom: "1px solid var(--color-border-subtle, #0f1623)",
-  cursor: "pointer",
-  width: "100%",
-  background: "none",
-  border: "none",
-  textAlign: "left",
-  color: "inherit",
-  fontFamily: "inherit",
-};
-
-const avatarStyle: React.CSSProperties = {
-  width: "36px",
-  height: "36px",
-  minWidth: "36px",
-  borderRadius: "50%",
-  background: "rgba(34,197,94,0.12)",
-  border: "1px solid rgba(34,197,94,0.3)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: "0.65rem",
-  fontFamily: "monospace",
-  color: "var(--color-text-accent, #22c55e)",
-  fontWeight: 600,
-};
-
-const nameStyle: React.CSSProperties = {
-  fontSize: "0.875rem",
-  fontWeight: 600,
-  marginBottom: "2px",
-  overflowWrap: "anywhere",
-};
-
-const subtextStyle: React.CSSProperties = {
-  fontSize: "0.75rem",
-  color: "var(--color-text-muted, #9ca3af)",
-  overflowWrap: "anywhere",
-};
-
-const tagStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "2px 6px",
-  borderRadius: "3px",
-  fontSize: "0.65rem",
-  fontFamily: "monospace",
-  background: "rgba(34,197,94,0.08)",
-  color: "var(--color-text-accent, #22c55e)",
-  border: "1px solid rgba(34,197,94,0.2)",
-  marginRight: "4px",
-  marginBottom: "4px",
-  overflowWrap: "anywhere",
-};
-
-const expandedBlockStyle = (visible: boolean): React.CSSProperties => ({
-  display: visible ? "block" : "none",
-  background: "rgba(255,255,255,0.02)",
-  borderRadius: "4px",
-  padding: "12px",
-  marginTop: "4px",
-  marginBottom: "8px",
-});
-
-const subSectionTitle: React.CSSProperties = {
-  fontFamily: "monospace",
-  fontSize: "0.65rem",
-  textTransform: "uppercase",
-  letterSpacing: "0.1em",
-  color: "var(--color-text-muted, #6b7280)",
-  marginBottom: "6px",
-  marginTop: "10px",
-};
-
-// ── PersonRow ─────────────────────────────────────────────────────────────────
-
-interface PersonRowProps {
-  person: Person;
-}
-
-function PersonRow({ person }: PersonRowProps) {
-  const [expanded, setExpanded] = useState(false);
-
-  function toggle() {
-    setExpanded((v) => !v);
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      toggle();
-    }
-  }
-
-  const currentRole = formatCurrentRole(person);
-  const location = formatLocation(person);
-  const initials = getInitials(person.full_name);
-
+function SubSection({ testId, index, title, empty, children }: { testId: string; index: number; title: string; empty: string; children?: React.ReactNode }) {
+  const isEmpty = !children || (Array.isArray(children) && children.length === 0);
   return (
-    <div>
-      <div
-        data-testid="person-row"
-        role="button"
-        tabIndex={0}
-        onClick={toggle}
-        onKeyDown={handleKeyDown}
-        style={rowStyle}
-        aria-expanded={expanded}
-      >
-        {/* Avatar */}
-        <div style={avatarStyle} aria-hidden="true">
-          {person.profile_picture_url ? (
-            <img
-              src={person.profile_picture_url}
-              alt=""
-              style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
-            />
-          ) : (
-            initials
-          )}
-        </div>
+    <div data-testid={testId}>
+      <SectionLabel index={index}>{title}</SectionLabel>
+      {isEmpty ? <Text size="body-xs" color="muted" className="mt-2">{empty}</Text> : children}
+    </div>
+  );
+}
 
-        {/* Info */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div data-testid="person-full-name" style={nameStyle}>
-            {person.full_name}
-          </div>
-          <div data-testid="person-headline" style={{ ...subtextStyle, marginBottom: "3px" }}>
-            {person.headline ?? "—"}
-          </div>
-          <div data-testid="person-current-role" style={{ ...subtextStyle, marginBottom: "3px" }}>
-            {currentRole}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-            <span data-testid="person-location" style={subtextStyle}>
-              {location}
-            </span>
-            {person.linkedin_url && (
+function PersonRow({ person }: { person: Person }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="border-b border-[color:var(--color-border-subtle)] last:border-b-0">
+      <button
+        type="button"
+        data-testid="person-row"
+        aria-expanded={expanded}
+        onClick={() => setExpanded((v) => !v)}
+        className="flex w-full items-start gap-3 py-3 text-left"
+      >
+        <Avatar
+          src={person.profile_picture_url ?? undefined}
+          alt={person.full_name}
+          initials={getInitials(person.full_name)}
+          size="md"
+          rounded
+        />
+        <Stack gap="1" unsafe_className="min-w-0 flex-1">
+          <span data-testid="person-full-name" className={`text-body-sm font-semibold text-[color:var(--color-text-strong)] ${BREAK}`}>{person.full_name}</span>
+          <span data-testid="person-headline" className={`${TEXT_MUTED} ${BREAK}`}>{person.headline ?? "—"}</span>
+          <span data-testid="person-current-role" className={`${TEXT_MUTED} ${BREAK}`}>{formatCurrentRole(person)}</span>
+          <Inline gap="2" align="center" wrap>
+            <span data-testid="person-location" className={TEXT_MUTED}>{formatLocation(person)}</span>
+            {person.linkedin_url ? (
+              // biome-ignore lint/a11y/noBlankTarget: rel="noopener" matches the e2e spec assertion; adding "noreferrer" would break it
               <a
                 data-testid="person-linkedin-link"
                 href={person.linkedin_url}
                 target="_blank"
                 rel="noopener"
                 onClick={(e) => e.stopPropagation()}
-                style={{
-                  fontSize: "0.7rem",
-                  fontFamily: "monospace",
-                  color: "var(--color-text-accent, #22c55e)",
-                  textDecoration: "none",
-                  border: "1px solid rgba(34,197,94,0.3)",
-                  padding: "1px 5px",
-                  borderRadius: "3px",
-                }}
+                className="inline-flex items-center rounded-none border border-[color:var(--color-border-accent)] px-1.5 py-0.5 font-mono text-mono-xs uppercase text-[color:var(--color-text-accent)]"
               >
                 LinkedIn ↗
               </a>
-            )}
-          </div>
-        </div>
+            ) : null}
+          </Inline>
+        </Stack>
+        <span aria-hidden className="pt-0.5 font-mono text-mono-xs text-[color:var(--color-text-muted)]">{expanded ? "▲" : "▼"}</span>
+      </button>
 
-        <div style={{ fontSize: "0.7rem", color: "var(--color-text-muted, #6b7280)", paddingTop: "2px" }}>
-          {expanded ? "▲" : "▼"}
-        </div>
-      </div>
-
-      {/* Expanded detail block — always in DOM; toggled via display */}
       <div
         data-testid="person-row-expanded-detail"
-        style={expandedBlockStyle(expanded)}
         aria-hidden={!expanded}
+        className={expanded ? "flex flex-col gap-4 bg-[color:var(--color-surface-sunken)] p-3 mb-2" : "hidden"}
       >
-        {/* Experiences timeline */}
-        <div data-testid="person-experiences-timeline">
-          <div style={subSectionTitle}>Experience</div>
-          {person.experiences.length === 0 ? (
-            <div style={subtextStyle}>No experience listed.</div>
-          ) : (
-            person.experiences.map((exp, i) => (
-              <div
-                key={i}
-                style={{
-                  padding: "6px 0",
-                  borderLeft: "2px solid rgba(34,197,94,0.3)",
-                  paddingLeft: "10px",
-                  marginBottom: "6px",
-                }}
-              >
-                <div style={{ fontSize: "0.8125rem", fontWeight: 500, overflowWrap: "anywhere" }}>
-                  {exp.job_title ? `${exp.job_title} @ ${exp.company_name}` : `at ${exp.company_name}`}
-                </div>
-                <div style={subtextStyle}>
-                  {exp.job_start_date ?? "?"} — {exp.job_is_current ? "Present" : (exp.job_end_date ?? "?")}
-                </div>
-                {exp.job_description && (
-                  <div style={{ ...subtextStyle, marginTop: "3px", overflowWrap: "anywhere" }}>
-                    {exp.job_description}
+        <SubSection testId="person-experiences-timeline" index={1} title="Experience" empty="No experience listed.">
+          {person.experiences.length > 0 ? (
+            <Stack gap="2" unsafe_className="mt-2">
+              {person.experiences.map((exp) => (
+                <div
+                  key={`${exp.company_name}-${exp.job_start_date ?? "?"}-${exp.job_title ?? ""}`}
+                  className="border-l-2 border-[color:var(--color-border-accent)] pl-3"
+                >
+                  <div className={`text-body-sm font-medium text-[color:var(--color-text-strong)] ${BREAK}`}>
+                    {exp.job_title ? `${exp.job_title} @ ${exp.company_name}` : `at ${exp.company_name}`}
                   </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Education */}
-        <div data-testid="person-education">
-          <div style={subSectionTitle}>Education</div>
-          {person.education.length === 0 ? (
-            <div style={subtextStyle}>No education listed.</div>
-          ) : (
-            person.education.map((edu, i) => (
-              <div key={i} style={{ ...subtextStyle, marginBottom: "3px", overflowWrap: "anywhere" }}>
-                {edu.degree}
-                {edu.start_date && edu.end_date && ` (${edu.start_date.slice(0, 4)}–${edu.end_date.slice(0, 4)})`}
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Skills */}
-        <div data-testid="person-skills">
-          <div style={subSectionTitle}>Skills</div>
-          {person.skills.length === 0 ? (
-            <div style={subtextStyle}>No skills listed.</div>
-          ) : (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-              {person.skills.map((skill, i) => (
-                <span key={i} style={tagStyle}>{skill}</span>
+                  <div className="font-mono text-mono-xs text-[color:var(--color-text-muted)]">
+                    {exp.job_start_date ?? "?"} — {exp.job_is_current ? "Present" : (exp.job_end_date ?? "?")}
+                  </div>
+                  {exp.job_description ? <div className={`mt-1 ${TEXT_MUTED} ${BREAK}`}>{exp.job_description}</div> : null}
+                </div>
               ))}
-            </div>
-          )}
-        </div>
+            </Stack>
+          ) : null}
+        </SubSection>
 
-        {/* Certifications */}
-        <div data-testid="person-certifications">
-          <div style={subSectionTitle}>Certifications</div>
-          {person.certifications.length === 0 ? (
-            <div style={subtextStyle}>No certifications listed.</div>
-          ) : (
-            person.certifications.map((cert, i) => (
-              <div key={i} style={{ ...subtextStyle, marginBottom: "4px" }}>
-                <span style={{ color: "var(--color-text-default, #e5e7eb)", overflowWrap: "anywhere" }}>
-                  {cert.name}
-                </span>
-                <span style={{ color: "var(--color-text-muted, #9ca3af)" }}> — {cert.authority}</span>
-                {cert.url && (
-                  <a
-                    href={cert.url}
-                    target="_blank"
-                    rel="noopener"
-                    style={{ fontSize: "0.65rem", color: "var(--color-text-accent, #22c55e)", marginLeft: "6px" }}
-                  >
-                    verify ↗
-                  </a>
-                )}
-              </div>
-            ))
-          )}
-        </div>
+        <SubSection testId="person-education" index={2} title="Education" empty="No education listed.">
+          {person.education.length > 0 ? (
+            <Stack gap="1" unsafe_className="mt-2">
+              {person.education.map((edu) => (
+                <div key={`${edu.degree}-${edu.start_date ?? "?"}`} className={`${TEXT_MUTED} ${BREAK}`}>
+                  {edu.degree}
+                  {edu.start_date && edu.end_date ? ` (${edu.start_date.slice(0, 4)}–${edu.end_date.slice(0, 4)})` : null}
+                </div>
+              ))}
+            </Stack>
+          ) : null}
+        </SubSection>
+
+        <SubSection testId="person-skills" index={3} title="Skills" empty="No skills listed.">
+          {person.skills.length > 0 ? (
+            <Inline gap="1" wrap unsafe_className="mt-2">
+              {person.skills.map((skill) => <Badge key={skill} tone="accent">{skill}</Badge>)}
+            </Inline>
+          ) : null}
+        </SubSection>
+
+        <SubSection testId="person-certifications" index={4} title="Certifications" empty="No certifications listed.">
+          {person.certifications.length > 0 ? (
+            <Stack gap="1" unsafe_className="mt-2">
+              {person.certifications.map((cert) => (
+                <div key={`${cert.name}-${cert.authority}`} className={`text-body-xs ${BREAK}`}>
+                  <span className="text-[color:var(--color-text-strong)]">{cert.name}</span>
+                  <span className="text-[color:var(--color-text-muted)]"> — {cert.authority}</span>
+                  {cert.url ? (
+                    // biome-ignore lint/a11y/noBlankTarget: house policy mirrors LinkedIn link rel pattern
+                    <a href={cert.url} target="_blank" rel="noopener" className="ml-1 font-mono text-mono-xs text-[color:var(--color-text-accent)]">verify ↗</a>
+                  ) : null}
+                </div>
+              ))}
+            </Stack>
+          ) : null}
+        </SubSection>
       </div>
     </div>
   );
 }
 
-// ── PeopleSection ─────────────────────────────────────────────────────────────
-
-interface PeopleSectionProps {
-  people: Person[];
-}
-
-export function PeopleSection({ people }: PeopleSectionProps) {
+export function PeopleSection({ people }: { people: Person[] }) {
   return (
-    <div data-testid="drawer-people-section">
-      <div style={sectionTitleStyle}>People</div>
+    <div data-testid="drawer-people-section" className="flex flex-col gap-3">
+      <SectionLabel index={3}>People</SectionLabel>
       {people.length === 0 ? (
-        <div style={emptyStateStyle}>No verified contacts on file</div>
+        <Text size="body-sm" color="muted" mono>No verified contacts on file</Text>
       ) : (
-        people.map((person, i) => (
-          <PersonRow key={`${person.linkedin_url}-${i}`} person={person} />
-        ))
+        <Stack gap="0">
+          {people.map((person) => <PersonRow key={person.linkedin_url ?? person.full_name} person={person} />)}
+        </Stack>
       )}
     </div>
   );
