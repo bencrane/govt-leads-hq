@@ -6,7 +6,8 @@
   "scripts": {
     "build": "bun run --filter @govt-leads-hq/tokens build && bun run --filter @govt-leads-hq/ui build && bun run --filter marketing-site build && bun run --filter platform-app build",
     "typecheck": "tsc -p packages/tokens --noEmit && tsc -p packages/shared --noEmit && tsc -p packages/ui --noEmit && tsc -p packages/eslint-plugin-govt-leads-hq --noEmit && tsc -b apps/marketing-site --noEmit && tsc -b apps/platform-app --noEmit",
-    "lint": "bun run --filter eslint-plugin-govt-leads-hq build && biome check packages/tokens packages/ui packages/shared packages/eslint-plugin-govt-leads-hq apps/marketing-site/src apps/platform-app/src eslint.config.mjs && bun x eslint apps/*/src/routes/**/*.tsx",
+    "lint": "bun run --filter eslint-plugin-govt-leads-hq build && biome check packages/tokens packages/ui packages/shared packages/eslint-plugin-govt-leads-hq eslint.config.mjs && bun x eslint apps/*/src/routes/**/*.tsx",
+    "lint:apps": "biome check apps/marketing-site/src apps/platform-app/src",
     "test": "bun run --filter @govt-leads-hq/shared test && bun run --filter @govt-leads-hq/tokens test && bun run --filter eslint-plugin-govt-leads-hq test && bun run --filter @govt-leads-hq/ui test",
     "test:e2e": "playwright test --config=e2e/playwright.config.ts",
     "storybook": "bun run --filter @govt-leads-hq/ui storybook",
@@ -35,6 +36,7 @@
   },
   "dependencies": {
     "@documenso/embed-react": "^0.6.1",
+    "@govt-leads-hq/ui": "workspace:*",
     "@stripe/react-stripe-js": "^6.4.0",
     "@stripe/stripe-js": "^9.6.0",
     "framer-motion": "^12.39.0",

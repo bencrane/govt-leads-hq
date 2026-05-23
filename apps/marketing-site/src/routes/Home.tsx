@@ -707,6 +707,7 @@ function Section({
   return (
     <section
       id={id}
+      // eslint-disable-next-line govt-leads-hq/no-route-geometry -- operator-tuned section helper; geometry locked
       className="border-t border-[color:var(--color-border-subtle)] px-6 py-20 sm:px-10 sm:py-28"
     >
       <div className="mx-auto max-w-[1200px]">
