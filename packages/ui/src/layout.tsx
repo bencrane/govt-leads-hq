@@ -22,6 +22,7 @@ import {
   pageMaxWidth,
   space,
   surfaceBg,
+  textColor,
 } from "./utils";
 
 type DivProps = Omit<React.HTMLAttributes<HTMLDivElement>, "className" | "children">;
@@ -300,3 +301,185 @@ export const Page = forwardRef<HTMLDivElement, PageProps>(function Page(
     </As>
   );
 });
+
+// ─────────────────────── PageHeader ───────────────────────
+
+export interface PageHeaderProps extends CommonProps {
+  /** Two-digit section index, e.g. "01". Rendered as "01 // {title}". */
+  section?: string;
+  /** Display-text heading. */
+  title?: ReactNode;
+  /** Secondary subtitle/description. */
+  description?: ReactNode;
+  /** Right-side actions slot. */
+  actions?: ReactNode;
+  /** Eyebrow text override — defaults to section + title. */
+  eyebrow?: ReactNode;
+}
+
+export function PageHeader({
+  section,
+  title,
+  description,
+  actions,
+  eyebrow,
+  children,
+  unsafe_className,
+}: PageHeaderProps) {
+  const eyebrowText =
+    eyebrow ??
+    (section ? (
+      <>
+        {section} <span aria-hidden>{"//"}</span>{" "}
+        {typeof title === "string" ? title.toUpperCase() : title}
+      </>
+    ) : null);
+
+  return (
+    <header className={cx("mb-10 flex items-start justify-between gap-6", unsafe_className)}>
+      <div className="min-w-0 flex-1">
+        {eyebrowText ? (
+          <span
+            data-page-header-eyebrow
+            data-testid="page-header-eyebrow"
+            className={cx("inline-block font-mono text-mono-xs uppercase", textColor.accent)}
+          >
+            {eyebrowText}
+          </span>
+        ) : null}
+        {title ? (
+          <h1
+            className={cx(
+              "mt-3 font-display text-display-xl font-semibold leading-[1.05] tracking-tight",
+              textColor.strong,
+            )}
+          >
+            {title}
+          </h1>
+        ) : null}
+        {description ? (
+          <p className={cx("mt-3 max-w-2xl text-body-lg", textColor.muted)}>{description}</p>
+        ) : null}
+        {children}
+      </div>
+      {actions ? <div className="flex shrink-0 items-center gap-3">{actions}</div> : null}
+    </header>
+  );
+}
+
+// ─────────────────────── PageBody ───────────────────────
+
+export interface PageBodyProps extends CommonProps {
+  gap?: SpacingProp;
+}
+
+/**
+ * Convenience body wrapper. Adds vertical rhythm between top-level sections.
+ * Most routes don't need this — they put sections directly under `<Page>`.
+ */
+export function PageBody({ gap = "12", children, unsafe_className }: PageBodyProps) {
+  return <div className={cx("flex flex-col", space.gap[gap], unsafe_className)}>{children}</div>;
+}
+
+// ─────────────────────── PageSection ───────────────────────
+
+export interface PageSectionProps extends CommonProps {
+  /** Two-digit index, e.g. "02". */
+  section?: string;
+  title?: ReactNode;
+  description?: ReactNode;
+  actions?: ReactNode;
+}
+
+export function PageSection({
+  section,
+  title,
+  description,
+  actions,
+  children,
+  unsafe_className,
+}: PageSectionProps) {
+  const hasHeader = section || title || description || actions;
+  return (
+    <section className={cx("mt-12 first:mt-0", unsafe_className)}>
+      {hasHeader ? (
+        <div className="mb-6 flex items-end justify-between gap-4">
+          <div>
+            {section ? (
+              <span
+                data-page-section-eyebrow
+                className={cx("inline-block font-mono text-mono-xs uppercase", textColor.accent)}
+              >
+                {section} <span aria-hidden>{"//"}</span>{" "}
+                {typeof title === "string" ? title.toUpperCase() : null}
+              </span>
+            ) : null}
+            {title && !section ? (
+              <h2
+                className={cx(
+                  "font-display text-display-md font-semibold tracking-tight",
+                  textColor.strong,
+                )}
+              >
+                {title}
+              </h2>
+            ) : null}
+            {title && section ? (
+              <h2
+                className={cx(
+                  "mt-2 font-display text-display-md font-semibold tracking-tight",
+                  textColor.strong,
+                )}
+              >
+                {title}
+              </h2>
+            ) : null}
+            {description ? (
+              <p className={cx("mt-2 text-body-md", textColor.muted)}>{description}</p>
+            ) : null}
+          </div>
+          {actions ? <div className="flex shrink-0 items-center gap-3">{actions}</div> : null}
+        </div>
+      ) : null}
+      {children}
+    </section>
+  );
+}
+
+// ─────────────────────── PageActions ───────────────────────
+
+export interface PageActionsProps extends CommonProps {
+  align?: "start" | "end" | "between";
+}
+
+export function PageActions({ align = "end", children, unsafe_className }: PageActionsProps) {
+  const alignClass =
+    align === "between" ? "justify-between" : align === "end" ? "justify-end" : "justify-start";
+  return (
+    <div className={cx("mt-8 flex items-center gap-3", alignClass, unsafe_className)}>
+      {children}
+    </div>
+  );
+}
+
+// ─────────────────────── PageEmptyState ───────────────────────
+
+export interface PageEmptyStateProps {
+  title: string;
+  description?: string;
+  actions?: ReactNode;
+  icon?: ReactNode;
+}
+
+export function PageEmptyState({ title, description, actions, icon }: PageEmptyStateProps) {
+  return (
+    <div className={cx("flex flex-col items-center text-center", space.py["20"])}>
+      {icon ? <div className={cx("mb-4", textColor.subtle)}>{icon}</div> : null}
+      <h3 className={cx("font-display text-display-md", textColor.strong)}>{title}</h3>
+      {description ? (
+        <p className={cx("mt-3 max-w-md text-body-md", textColor.muted)}>{description}</p>
+      ) : null}
+      {actions ? <div className="mt-6 flex items-center gap-3">{actions}</div> : null}
+    </div>
+  );
+}
